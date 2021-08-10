@@ -32,6 +32,7 @@ for rmv in sections:
 # dictionary for storing word occurences per section
 words = dict()
 
+print("Section: Summary")
 for sect in sections:
     # "mw-headline" are section headings
     if sect.find(class_="mw-headline"):
@@ -62,24 +63,27 @@ for sect in sections:
         else:
             print("\tSub-Section:", text)
     else:
+        # filters out table word count because of lack of sentences
+        if sect.name != "table":
+            # cleans up text references
+            text = sect.text
+            text = text.replace('(', '').replace(')', '').replace(',', '')
+            text = text.split()
 
-        # cleans up text references
-        text = sect.text
-        text = text.replace('(', '').replace(')', '').replace(',', '')
-        text = text.split()
+            # updates word occurrences in dictionary
 
-        # updates word occurrences in dictionary
-        for word in text:
-            word = word.lower()
-            if word in words:
-                words[word] += 1
-            else:
-                words.update({word: 1})
+            for word in text:
+                word = word.lower()
+                if word in words:
+                    words[word] += 1
+                else:
+                    words.update({word: 1})
 
         # find all links and prints
         links = sect.find_all('a', {'href': True}, recursive=True)
         if links != None:
             for link in links:
+                # Wikipedia edit page links may not be revelant and is filtered out
                 if link["href"][0] != "#" and link["href"][-11:] != "action=edit":
                     if len(link["href"]) > 5 and "/wiki/" in link["href"][:6].lower():
                         # Refactors Wikipedia article links
